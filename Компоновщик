@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+
+public abstract class FileSystemComponent
+{
+    protected string name;
+
+    public FileSystemComponent(string name)
+    {
+        this.name = name;
+    }
+
+    public string Name => name;
+
+    public abstract void Display(int indent = 0);
+    public abstract int GetSize();
+}
+
+public class File : FileSystemComponent
+{
+    private int size;
+
+    public File(string name, int size) : base(name)
+    {
+        this.size = size;
+    }
+
+    public override void Display(int indent = 0)
+    {
+        Console.WriteLine(new string(' ', indent) + $"Файл: {Name}, Размер: {size}KB");
+    }
+
+    public override int GetSize()
+    {
+        return size;
+    }
+}
+
+public class Directory : FileSystemComponent
+{
+    private List<FileSystemComponent> components = new List<FileSystemComponent>();
+
+    public Directory(string name) : base(name) { }
+
+    public void Add(FileSystemComponent component)
+    {
+        if (!components.Contains(component))
+        {
+            components.Add(component);
+            Console.WriteLine($"Добавлен компонент: {component.Name} в папку {Name}");
+        }
+        else
+        {
+            Console.WriteLine($"Компонент {component.Name} уже существует в папке {Name}");
+        }
+    }
+
+    public void Remove(FileSystemComponent component)
+    {
+        if (components.Contains(component))
+        {
+            components.Remove(component);
+            Console.WriteLine($"Удален компонент: {component.Name} из папки {Name}");
+        }
+        else
+        {
+            Console.WriteLine($"Компонент {component.Name} не найден в папке {Name}");
+        }
+    }
+
+    public override void Display(int indent = 0)
+    {
+        Console.WriteLine(new string(' ', indent) + $"Папка: {Name}");
+        foreach (var component in components)
+        {
+            component.Display(indent + 2);
+        }
+    }
+
+    public override int GetSize()
+    {
+        int totalSize = 0;
+        foreach (var component in components)
+        {
+            totalSize += component.GetSize();
+        }
+        return totalSize;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        File file1 = new File("File1.txt", 120);
+        File file2 = new File("File2.doc", 300);
+        File file3 = new File("File3.jpg", 500);
+
+        Directory root = new Directory("Root");
+        Directory subDir1 = new Directory("SubDir1");
+        Directory subDir2 = new Directory("SubDir2");
+
+        root.Add(file1);
+        root.Add(subDir1);
+        subDir1.Add(file2);
+        subDir1.Add(subDir2);
+        subDir2.Add(file3);
+
+        Console.WriteLine("\nСтруктура файловой системы:");
+        root.Display();
+
+        Console.WriteLine($"\nОбщий размер файловой системы: {root.GetSize()}KB");
+    }
+}
